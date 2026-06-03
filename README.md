@@ -1,6 +1,6 @@
 # Qwen NLP Homework
 
-本仓库是 NLP 课程作业交付项目，主题为 **Qwen 系列大模型技术发展历程**。报告围绕 Qwen 从初代开放中文/中英 LLM，到 Qwen3/Qwen3.5/Qwen3.6、推理模型、多模态模型、代码/数学/长上下文、Embedding/Reranker 与 VLA 等分支的技术演进进行梳理。
+本仓库主题为 **Qwen 系列大模型技术发展历程**。报告围绕 Qwen 从初代开放中文/中英 LLM，到 Qwen3/Qwen3.5/Qwen3.6、推理模型、多模态模型、代码/数学/长上下文、Embedding/Reranker 与 VLA 等分支的技术演进进行梳理。
 
 ## 交付内容
 
