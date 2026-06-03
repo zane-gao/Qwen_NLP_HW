@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qwen 系列技术发展历程 Slides</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --ink: #152033;
+      --muted: #667085;
+      --line: #d8deea;
+      --paper: #ffffff;
+      --blue: #245fd6;
+      --teal: #047d95;
+      --green: #177a50;
+      --orange: #c66a13;
+      --rose: #b83262;
+      --soft-blue: #edf3ff;
+      --soft-teal: #e8fbff;
+      --soft-green: #edf8f1;
+      --soft-orange: #fff3e4;
+      --soft-rose: #fff0f5;
+      --shadow: 0 20px 70px rgba(21, 32, 51, .12);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(36,95,214,.06) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(36,95,214,.05) 1px, transparent 1px),
+        var(--bg);
+      background-size: 44px 44px;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 62px 78px 58px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 28px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(26px);
+      transition: opacity .28s ease, transform .28s ease;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      z-index: 2;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+    }
+    .kicker {
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      max-width: 1060px;
+      font-size: clamp(54px, 7vw, 96px);
+      line-height: 1.02;
+      font-weight: 900;
+    }
+    h2 {
+      font-size: clamp(38px, 4.4vw, 62px);
+      line-height: 1.08;
+      font-weight: 850;
+      max-width: 1080px;
+    }
+    h3 {
+      font-size: 26px;
+      line-height: 1.22;
+      font-weight: 800;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 24px;
+      line-height: 1.55;
+      max-width: 900px;
+    }
+    .body {
+      min-height: 0;
+      display: grid;
+      align-content: center;
+      gap: 26px;
+    }
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .grid { display: grid; gap: 18px; }
+    .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card {
+      background: rgba(255,255,255,.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      box-shadow: 0 10px 32px rgba(21, 32, 51, .06);
+    }
+    .card b {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+    .card p, .card li {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    .blue { background: var(--soft-blue); border-color: #bdd0ff; }
+    .teal { background: var(--soft-teal); border-color: #b8e9f1; }
+    .green { background: var(--soft-green); border-color: #c0e7cf; }
+    .orange { background: var(--soft-orange); border-color: #efc89b; }
+    .rose { background: var(--soft-rose); border-color: #efb9ce; }
+    .image-frame {
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .image-frame img {
+      width: 100%;
+      height: 100%;
+      max-height: 560px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #f8fafc;
+    }
+    .caption {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 28px;
+      align-items: center;
+      min-height: 0;
+    }
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+    .node {
+      min-height: 132px;
+      border-radius: 8px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+    .node b { display: block; font-size: 19px; line-height: 1.2; margin-bottom: 8px; }
+    .node span { color: var(--muted); font-size: 14px; line-height: 1.45; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 32px rgba(21,32,51,.06);
+      font-size: 16px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 11px 13px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #eef3fb; }
+    .big-number {
+      font-size: clamp(86px, 13vw, 180px);
+      line-height: .9;
+      font-weight: 950;
+      color: var(--blue);
+    }
+    .quote {
+      border-left: 6px solid var(--blue);
+      padding-left: 26px;
+      font-size: 34px;
+      line-height: 1.35;
+      font-weight: 780;
+      max-width: 980px;
+    }
+    .source-list {
+      columns: 2;
+      column-gap: 30px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .controls {
+      position: fixed;
+      right: 18px;
+      bottom: 14px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .progress {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      background: var(--blue);
+      width: 0;
+      z-index: 11;
+      transition: width .25s ease;
+    }
+    @media (max-width: 900px) {
+      .slide { padding: 34px 22px 50px; overflow-y: auto; }
+      .body { align-content: start; }
+      .g2, .g3, .g4, .split, .timeline { grid-template-columns: 1fr; }
+      .controls { display: none; }
+      h1 { font-size: 50px; }
+      h2 { font-size: 36px; }
+      .lede { font-size: 18px; }
+      .card p, .card li { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" id="deck">
+    <section class="slide active" data-title="封面">
+      <div class="top"><span class="kicker">Qwen Technical Evolution</span><span class="badge">2026-06-02</span></div>
+      <div class="body">
+        <h1>Qwen 系列大模型技术发展历程</h1>
+        <p class="lede">从开放中英 LLM 到原生多模态 Agent：逐代拆解 Qwen 解决的问题、专门技术，以及架构、算法、工程改进。</p>
+      </div>
+      <div class="footer"><span>资料：官方博客 / GitHub / Hugging Face / arXiv</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="读图">
+      <div class="top"><span class="kicker">Map</span><span class="badge">主线 + 全家桶分支</span></div>
+      <div class="body">
+        <div class="image-frame">
+          <img src="assets/qwen_figures/qwen_technical_timeline.svg" alt="Qwen 技术路线时间线">
+          <div class="caption">自制解释图，基于官方博客、GitHub 与 arXiv 资料整理。</div>
+        </div>
+      </div>
+      <div class="footer"><span>四条主线：通用 LLM、效率架构、推理 Agent、多模态</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="四条主线">
+      <div class="top"><span class="kicker">Thesis</span><span class="badge">不是只堆参数</span></div>
+      <div class="body">
+        <div class="grid g4">
+          <div class="card blue"><b>通用能力</b><p>中英到多语，指令跟随、长文本、代码、数学逐步增强。</p></div>
+          <div class="card teal"><b>效率架构</b><p>Dense Transformer 到 GQA、MoE、Hybrid Attention、Gated DeltaNet。</p></div>
+          <div class="card orange"><b>显式推理</b><p>工具调用到 QwQ/QVQ，再到 Qwen3 hybrid thinking。</p></div>
+          <div class="card green"><b>多模态原生</b><p>VL、Audio、Omni、Image、VLA 逐步统一到 agent foundation。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Qwen 的关键是“主线和分支互相反哺”</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="架构演进">
+      <div class="top"><span class="kicker">Architecture</span><span class="badge">从稳定到高效再到原生多模态</span></div>
+      <div class="body">
+        <div class="image-frame">
+          <img src="assets/qwen_figures/qwen_architecture_evolution.svg" alt="Qwen 架构演进示意">
+          <div class="caption">自制解释图，抽象概括各代关键结构，不代表官方完整网络拓扑。</div>
+        </div>
+      </div>
+      <div class="footer"><span>Dense -> GQA/MoE -> Hybrid Thinking -> Gated DeltaNet / Omni</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen 初代">
+      <div class="top"><span class="kicker">2023</span><span class="badge">工程化起点</span></div>
+      <div class="body split">
+        <div>
+          <h2>Qwen 初代：先把开放中英 LLM 做可用</h2>
+          <p class="lede">重点不是“发明新层”，而是把 base、chat、量化、微调、部署、工具调用放进同一个开放生态。</p>
+        </div>
+        <div class="grid">
+          <div class="card blue"><b>解决问题</b><p>中文/英文基础能力、开源工具使用、训练部署链路。</p></div>
+          <div class="card green"><b>具体技术</b><p>最多 3T token；1.8B/7B/14B/72B；SFT/RLHF；工具调用和代码解释器。</p></div>
+          <div class="card orange"><b>工程改进</b><p>Int4/Int8、GPTQ、LoRA/Q-LoRA、vLLM/FastChat、WebUI/CLI。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>第一代的关键词：可开放、可部署、可微调</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen 初代图">
+      <div class="top"><span class="kicker">Benchmark</span><span class="badge">官方图</span></div>
+      <div class="body">
+        <div class="image-frame">
+          <img src="assets/qwen_figures/qwen1_radar_72b.jpg" alt="Qwen-72B benchmark 雷达图">
+          <div class="caption">Qwen-72B benchmark 雷达图。来源：QwenLM/Qwen 官方 GitHub。</div>
+        </div>
+      </div>
+      <div class="footer"><span>初代已经覆盖 MMLU、C-Eval、GSM8K、HumanEval 等多类任务</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen1.5">
+      <div class="top"><span class="kicker">Qwen1.5</span><span class="badge">稳定多尺寸</span></div>
+      <div class="body">
+        <h2>Qwen1.5：把“强模型”变成“稳定模型族”</h2>
+        <div class="grid g3">
+          <div class="card blue"><b>多尺寸</b><p>0.5B 到 110B，覆盖端侧、本地开发、云端推理。</p></div>
+          <div class="card teal"><b>32K 上下文</b><p>统一接口让长文本任务更容易迁移。</p></div>
+          <div class="card orange"><b>首个 MoE</b><p>Qwen1.5-MoE-A2.7B 开始探索少激活参数路径。</p></div>
+        </div>
+        <p class="quote">这一代的意义是生态稳定：Transformers、AWQ/GPTQ/GGUF、vLLM/SGLang、llama.cpp、MLX 开始形成闭环。</p>
+      </div>
+      <div class="footer"><span>局限：推理、多模态和极长上下文仍依赖后续分支</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen2">
+      <div class="top"><span class="kicker">Qwen2</span><span class="badge">更长、更省、更强多语</span></div>
+      <div class="body">
+        <div class="grid g4">
+          <div class="card blue"><b>7T token</b><p>基础知识、代码、数学、多语能力提升。</p></div>
+          <div class="card teal"><b>GQA</b><p>降低 KV cache 显存和推理带宽。</p></div>
+          <div class="card orange"><b>MoE</b><p>57B-A14B 在总参数和激活成本之间折中。</p></div>
+          <div class="card green"><b>128K</b><p>长文档、代码仓库、复杂对话进入主线。</p></div>
+        </div>
+        <p class="lede">Qwen2 的关键变化是：长上下文和效率不再是附加功能，而是基础模型设计目标。</p>
+      </div>
+      <div class="footer"><span>局限：推理模型和多模态模型仍主要通过专门分支实现</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen2.5">
+      <div class="top"><span class="kicker">Qwen2.5</span><span class="badge">成熟通用模型 + 分支矩阵</span></div>
+      <div class="body">
+        <h2>Qwen2.5：18T 数据把通用能力推到成熟阶段</h2>
+        <div class="grid g3">
+          <div class="card blue"><b>尺寸补齐</b><p>0.5B、1.5B、3B、7B、14B、32B、72B。</p></div>
+          <div class="card green"><b>能力补齐</b><p>指令跟随、结构化输出、长文本生成、代码、数学。</p></div>
+          <div class="card orange"><b>分支体系</b><p>Coder、Math、VL、Audio、Omni、1M 长上下文。</p></div>
+        </div>
+        <p class="quote">Qwen2.5 的分支后来反哺 Qwen3：VL 提取文档，Math/Coder 生成合成数据。</p>
+      </div>
+      <div class="footer"><span>局限：深度推理仍主要靠 QwQ 等独立模型</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="QwQ/QVQ">
+      <div class="top"><span class="kicker">Reasoning</span><span class="badge">从隐式能力到显式训练目标</span></div>
+      <div class="body split">
+        <div>
+          <h2>QwQ / QVQ：让模型“愿意花 token 思考”</h2>
+          <p class="lede">QwQ 把数学、代码、逻辑的 long CoT 和 RL 推理推到前台；QVQ 则探索视觉输入下的多步推理。</p>
+        </div>
+        <div class="grid">
+          <div class="card orange"><b>算法重点</b><p>long CoT 冷启动、规则奖励、可验证任务 RL。</p></div>
+          <div class="card rose"><b>工程影响</b><p>需要更长输出、更高 max token、reasoning content 与 final answer 分离。</p></div>
+          <div class="card blue"><b>历史作用</b><p>为 Qwen3 thinking mode、thinking budget、四阶段后训练铺路。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>推理模型的问题：质量高，但延迟和输出成本也高</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen3">
+      <div class="top"><span class="kicker">Qwen3</span><span class="badge">Think Deeper, Act Faster</span></div>
+      <div class="body">
+        <h2>Qwen3：把深度推理和快速响应放回同一个框架</h2>
+        <div class="grid g4">
+          <div class="card blue"><b>Dense</b><p>0.6B、1.7B、4B、8B、14B、32B。</p></div>
+          <div class="card teal"><b>MoE</b><p>30B-A3B 与 235B-A22B。</p></div>
+          <div class="card orange"><b>Hybrid Thinking</b><p>thinking / non-thinking，可用模板或指令控制。</p></div>
+          <div class="card green"><b>119 语言</b><p>从多语能力升级为全球化基础能力。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>核心问题：同一模型怎样平衡质量、延迟和成本</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen3 训练">
+      <div class="top"><span class="kicker">Training</span><span class="badge">三阶段预训练 + 四阶段后训练</span></div>
+      <div class="body">
+        <div class="grid g2">
+          <div class="image-frame">
+            <img src="assets/qwen_figures/qwen3_base.jpg" alt="Qwen3 base 性能比较图">
+            <div class="caption">Qwen3 base 模型性能比较图。来源：Qwen 官方博客。</div>
+          </div>
+          <div class="image-frame">
+            <img src="assets/qwen_figures/qwen3_post_training.png" alt="Qwen3 后训练流程">
+            <div class="caption">Qwen3 四阶段后训练流程。来源：Qwen 官方博客。</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>36T token；long CoT cold start、reasoning RL、thinking fusion、general RL</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen3-Next">
+      <div class="top"><span class="kicker">Qwen3-Next</span><span class="badge">效率架构再分化</span></div>
+      <div class="body">
+        <div class="big-number">80B-A3B</div>
+        <div class="grid g3">
+          <div class="card teal"><b>Hybrid Attention</b><p>保留长程建模能力，降低长序列成本。</p></div>
+          <div class="card blue"><b>Gated DeltaNet</b><p>提高长上下文吞吐，为高效推理服务。</p></div>
+          <div class="card orange"><b>超稀疏 MoE</b><p>总参数大，激活参数约 3B，适合长上下文 agent。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>它也是 Qwen3-Coder-Next 的 base 来源</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen3.5/3.6">
+      <div class="top"><span class="kicker">2026</span><span class="badge">原生多模态 Agent</span></div>
+      <div class="body split">
+        <div>
+          <h2>Qwen3.5 / 3.6：从模型能力转向真实工作流</h2>
+          <p class="lede">Qwen3.5 强调早融合多模态、201 语言、百万 agent 环境 RL；Qwen3.6 强调稳定性、agentic coding 和 thinking preservation。</p>
+        </div>
+        <div class="grid">
+          <div class="card blue"><b>统一视觉语言 foundation</b><p>多模态 token 早融合，不把视觉只当附加模块。</p></div>
+          <div class="card teal"><b>GDN + sparse MoE</b><p>高吞吐、低延迟、少激活参数。</p></div>
+          <div class="card orange"><b>开发者体验</b><p>前端 workflow、仓库级 reasoning、Qwen Code、Qwen-Agent。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>最新公开线索主要来自官方 README、博客和模型卡</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Qwen3.6 图">
+      <div class="top"><span class="kicker">Qwen3.6</span><span class="badge">官方 benchmark 图</span></div>
+      <div class="body">
+        <div class="grid g2">
+          <div class="image-frame">
+            <img src="assets/qwen_figures/qwen36_35b_a3b_score.png" alt="Qwen3.6-35B-A3B benchmark">
+            <div class="caption">Qwen3.6-35B-A3B benchmark。来源：Qwen3.6 官方 GitHub README。</div>
+          </div>
+          <div class="image-frame">
+            <img src="assets/qwen_figures/qwen36_27b_score.png" alt="Qwen3.6-27B benchmark">
+            <div class="caption">Qwen3.6-27B benchmark。来源：Qwen3.6 官方 GitHub README。</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Qwen3.6 的发布重点是 agentic coding 与真实开发稳定性</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Coder/Math">
+      <div class="top"><span class="kicker">Branches</span><span class="badge">代码与数学</span></div>
+      <div class="body">
+        <div class="grid g2">
+          <div class="card blue">
+            <b>Coder：从补全到 agentic coding</b>
+            <p>Qwen2.5-Coder 强调代码继续预训练、FIM、128K；Qwen3-Coder/Coder-Next 强调可执行任务合成、环境交互、RL、仓库级理解。</p>
+          </div>
+          <div class="card orange">
+            <b>Math：从 CoT 到 TIR 和奖励模型</b>
+            <p>Qwen2.5-Math 支持中英 CoT 与 Tool-integrated Reasoning；Math-RM-72B 用于候选解排序。</p>
+          </div>
+        </div>
+        <div class="image-frame">
+          <img src="assets/qwen_figures/qwen25_math_allsize.png" alt="Qwen2.5-Math 多尺寸能力图">
+          <div class="caption">Qwen2.5-Math 多尺寸能力图。来源：Qwen2.5-Math 官方 GitHub README。</div>
+        </div>
+      </div>
+      <div class="footer"><span>专用分支不是旁支，而是后续主线训练数据和能力的来源</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="VL">
+      <div class="top"><span class="kicker">Vision-Language</span><span class="badge">读图到视觉 Agent</span></div>
+      <div class="body split">
+        <div class="grid">
+          <div class="card green"><b>Qwen-VL</b><p>视觉 receptor、输入输出接口、OCR、grounding、多语 VQA。</p></div>
+          <div class="card teal"><b>Qwen2.5-VL</b><p>动态分辨率、视频理解、文档解析和视觉定位。</p></div>
+          <div class="card blue"><b>Qwen3-VL</b><p>Visual Agent、Visual Coding、2D/3D grounding、长视频和 Thinking 版本。</p></div>
+        </div>
+        <div class="image-frame">
+          <img src="assets/qwen_figures/qwen3_vl_arch.jpg" alt="Qwen3-VL 架构图">
+          <div class="caption">Qwen3-VL 架构图。来源：Qwen3-VL 官方 GitHub README。</div>
+        </div>
+      </div>
+      <div class="footer"><span>技术关键词：Interleaved-MRoPE、DeepStack、文本-时间戳对齐</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Omni">
+      <div class="top"><span class="kicker">Omni</span><span class="badge">边看边听边说</span></div>
+      <div class="body">
+        <h2>Omni 的目标：多模态输入，文本和自然语音流式输出</h2>
+        <div class="grid g2">
+          <div class="image-frame">
+            <img src="assets/qwen_figures/qwen25_omni_arch.png" alt="Qwen2.5-Omni 架构图">
+            <div class="caption">Qwen2.5-Omni：Thinker-Talker 与 TMRoPE。来源：官方 GitHub README。</div>
+          </div>
+          <div class="image-frame">
+            <img src="assets/qwen_figures/qwen3_omni_arch.png" alt="Qwen3-Omni 架构图">
+            <div class="caption">Qwen3-Omni：MoE Thinker-Talker、AuT、多 codebook。来源：官方 GitHub README。</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Omni 是 Qwen 从 VLM 到真实实时助手的重要一步</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="Image/VLA/Embedding">
+      <div class="top"><span class="kicker">Beyond Text</span><span class="badge">图像、动作、检索</span></div>
+      <div class="body">
+        <div class="grid g3">
+          <div class="card rose"><b>Qwen-Image</b><p>20B MMDiT，重点解决复杂文字渲染、中文文字、精确图像编辑。</p></div>
+          <div class="card green"><b>Qwen-VLA</b><p>Qwen3.5 VLM backbone + DiT action decoder，面向机器人动作。</p></div>
+          <div class="card blue"><b>Qwen3-Embedding</b><p>Embedding/Reranker，MRL、指令感知、100+ 语言，进入 RAG 基础设施。</p></div>
+        </div>
+        <div class="image-frame">
+          <img src="assets/qwen_figures/qwen_image_merge.jpg" alt="Qwen-Image 结果示例">
+          <div class="caption">Qwen-Image 结果示例。来源：Qwen-Image 官方 GitHub README。</div>
+        </div>
+      </div>
+      <div class="footer"><span>Qwen 家族已经覆盖“理解、生成、检索、行动”四类基础能力</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="总表">
+      <div class="top"><span class="kicker">Summary Table</span><span class="badge">每代解决什么</span></div>
+      <div class="body">
+        <table>
+          <thead><tr><th>版本</th><th>核心问题</th><th>关键技术</th></tr></thead>
+          <tbody>
+            <tr><td>Qwen 初代</td><td>开放中英 LLM 可用性</td><td>3T、Chat 对齐、工具调用、量化/微调/部署</td></tr>
+            <tr><td>Qwen1.5</td><td>多尺寸稳定开放</td><td>0.5B-110B、32K、HF 原生、首个 MoE</td></tr>
+            <tr><td>Qwen2</td><td>更长、更省、更强多语</td><td>7T、GQA、128K、57B-A14B MoE</td></tr>
+            <tr><td>Qwen2.5</td><td>通用能力成熟</td><td>18T、结构化输出、Coder/Math/VL/Omni</td></tr>
+            <tr><td>Qwen3</td><td>推理和快速响应统一</td><td>Dense+MoE、thinking budget、四阶段后训练</td></tr>
+            <tr><td>Qwen3.5/3.6</td><td>原生多模态 Agent</td><td>早融合多模态、201 语言、agentic coding</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="footer"><span>完整来源索引：qwen_source_index.md</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="结论">
+      <div class="top"><span class="kicker">Conclusion</span><span class="badge">一句话</span></div>
+      <div class="body">
+        <p class="quote">Qwen 的路线是：先把开放中英 LLM 做强，再把多尺寸和工程生态做稳，然后用专用分支补齐代码、数学、视觉、语音和图像能力，最后把推理、Agent 和多模态统一回主线模型。</p>
+        <div class="grid g3">
+          <div class="card blue"><b>模型层</b><p>Dense、MoE、Hybrid Attention、Gated DeltaNet、MMDiT/DiT 并行发展。</p></div>
+          <div class="card orange"><b>训练层</b><p>大规模预训练、合成数据、long CoT、RL、TIR、奖励模型、多模态早融合。</p></div>
+          <div class="card green"><b>工程层</b><p>HF/ModelScope、vLLM/SGLang、MLX/llama.cpp、Qwen-Agent、Qwen Code、API/Studio。</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>从聊天模型到 agent foundation</span><span class="num"></span></div>
+    </section>
+
+    <section class="slide" data-title="来源">
+      <div class="top"><span class="kicker">Sources</span><span class="badge">官方优先</span></div>
+      <div class="body">
+        <h2>主要资料来源</h2>
+        <div class="source-list">
+          Qwen 初代 arXiv 2309.16609<br>
+          Qwen2 arXiv 2407.10671<br>
+          Qwen2.5 arXiv 2412.15115<br>
+          Qwen3 arXiv 2505.09388<br>
+          Qwen2.5-Omni arXiv 2503.20215<br>
+          Qwen3-VL arXiv 2511.21631<br>
+          Qwen3-Omni arXiv 2509.17765<br>
+          Qwen-Image arXiv 2508.02324<br>
+          QwenLM GitHub 官方仓库<br>
+          qwen.ai / qwenlm.github.io 官方博客<br>
+          Hugging Face / ModelScope 模型卡<br>
+          详见 docs/qwen_source_index.md
+        </div>
+      </div>
+      <div class="footer"><span>本 deck 图片均引用本地 assets/qwen_figures</span><span class="num"></span></div>
+    </section>
+  </main>
+  <div class="controls" aria-label="翻页控件">
+    <button type="button" id="prev">上一页</button>
+    <button type="button" id="next">下一页</button>
+  </div>
+  <div class="progress" id="progress"></div>
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    let index = 0;
+
+    function showSlide(nextIndex) {
+      index = Math.max(0, Math.min(slides.length - 1, nextIndex));
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("active", i === index);
+        slide.querySelector(".num").textContent = `${i + 1} / ${slides.length}`;
+      });
+      document.getElementById("progress").style.width = `${((index + 1) / slides.length) * 100}%`;
+      const title = slides[index].dataset.title || `Slide ${index + 1}`;
+      history.replaceState(null, "", `#${index + 1}`);
+      document.title = `${title} · Qwen 系列技术发展历程`;
+    }
+
+    function step(delta) {
+      showSlide(index + delta);
+    }
+
+    document.getElementById("prev").addEventListener("click", () => step(-1));
+    document.getElementById("next").addEventListener("click", () => step(1));
+    window.addEventListener("keydown", (event) => {
+      if (["ArrowRight", "PageDown", " "].includes(event.key)) {
+        event.preventDefault();
+        step(1);
+      }
+      if (["ArrowLeft", "PageUp"].includes(event.key)) {
+        event.preventDefault();
+        step(-1);
+      }
+      if (event.key === "Home") showSlide(0);
+      if (event.key === "End") showSlide(slides.length - 1);
+    });
+    const initial = Number(location.hash.replace("#", ""));
+    showSlide(Number.isFinite(initial) && initial > 0 ? initial - 1 : 0);
+  </script>
+</body>
+</html>

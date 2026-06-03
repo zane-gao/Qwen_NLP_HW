@@ -1,0 +1,27 @@
+.DS_Store
+
+# Python 缓存与本地环境，避免提交机器相关状态。
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# 常见训练、实验与构建产物，后续需要保留时再按文件显式纳入。
+checkpoints/
+runs/
+outputs/
+wandb/
+mlruns/
+*.ckpt
+*.pt
+*.pth
+
+# 编辑器与临时文件。
+.idea/
+.vscode/
+*.tmp
+*.log
